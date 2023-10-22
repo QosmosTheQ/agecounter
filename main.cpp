@@ -11,6 +11,7 @@ int main() {
 
     struct tm tm;
     strptime(dob.c_str(), "%d.%m.%Y", &tm);
+    tm.tm_hour = 12; // Saat dilimini ayarla
     std::time_t birthTime = mktime(&tm);
     if (birthTime == -1) {
         std::cerr << "Hatalı tarih formatı. Program sonlandırılıyor." << std::endl;
