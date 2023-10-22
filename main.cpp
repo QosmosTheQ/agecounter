@@ -1,31 +1,28 @@
 #include <iostream>
-#include <ctime>
-#include <iomanip>
 #include <chrono>
+#include <iomanip>
 #include <thread>
+#include <unistd.h>
 
 int main() {
-    std::cout << "Doğum tarihinizi girin (dd.mm.yyyy): ";
+    std::cout << "date of birth (dd.mm.yyyy): ";
     std::string dob;
     std::cin >> dob;
 
-    struct tm tm;
-    strptime(dob.c_str(), "%d.%m.%Y", &tm);
-    tm.tm_hour = 12; // Saat dilimini ayarla
-    std::time_t birthTime = mktime(&tm);
-    if (birthTime == -1) {
-        std::cerr << "Hatalı tarih formatı. Program sonlandırılıyor." << std::endl;
-        return 1;
-    }
+    std::tm tm = {};
+    std::istringstream ss(dob);
+    ss >> std::get_time(&tm, "%d.%m.%Y");
 
-    std::time_t currentTime;
-    double ageInYears;
+    auto birthTime = std::chrono::system_clock::from_time_t(std::mktime(&tm));
 
     while (true) {
-        currentTime = std::time(nullptr);
-        ageInYears = std::difftime(currentTime, birthTime) / (60 * 60 * 24 * 365.25);
-        std::cout << std::fixed << std::setprecision(9) << "Yaşınız: " << ageInYears << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        auto currentTime = std::chrono::system_clock::now();
+        auto ageInSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - birthTime).count();
+        double ageInYears = ageInSeconds / (60.0 * 60.0 * 24.0 * 365.25);
+
+        std::cout << "\033[H\033[J"; 
+        std::cout << std::fixed << std::setprecision(9) << "ur age is: " << ageInYears << std::endl;
+        usleep(100);
     }
 
     return 0;
